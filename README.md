@@ -24,6 +24,7 @@
 - [Security Considerations](#security-considerations)
 - [Best Practices](#best-practices)
 - [What Not To Do](#what-not-to-do)
+- [License](#license)
 
 ## Installation
 
@@ -295,3 +296,9 @@ const store = new SecureCookieStore({
 // DON'T use in security-critical applications
 // This library is for general-purpose storage only
 ```
+
+## License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+---
