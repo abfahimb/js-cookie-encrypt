@@ -1,0 +1,41 @@
+{
+    "name": "encrypt-cookiejs",
+    "version": "1.0.0",
+    "description": "lightweight, easy-to-use JavaScript library for securely storing data in the browser's local storage. By employing advanced encryption techniques, encrypt-storejs ensures that sensitive information is safely stored and protected against unauthorized access",
+    "main": "dist/encrypt-cookie.js",
+    "types": "dist/encrypt-cookie.d.ts",
+    "browser": "dist/encrypt-cookie.js",
+    "unpkg": "dist/encrypt-cookie.min.js",
+    "jsdelivr": "dist/encrypt-cookie.min.js",
+    "files": [
+        "dist",
+        "LICENSE",
+        "README.md"
+    ],
+    "keywords": [
+        "encrypt-cookiejs",
+        "cookie",
+        "cookies",
+        "browser",
+        "commonjs",
+        "client",
+        "browserify",
+        "encryption"
+    ],
+    "homepage": "https://github.com/abfahimb/encrypt-cookieJS#readme",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/abfahimb/encrypt-cookieJS.git"
+    },
+    "author": "Abdullah Al Fahim",
+    "license": "MIT",
+    "scripts": {
+        "build": "tsc && terser dist/encrypt-cookie.js -o dist/encrypt-cookie.min.js --compress --mangle --comments '/^!/'",
+        "prepare": "npm run build"
+    },
+    "devDependencies": {
+        "terser": "^5.0.0",
+        "typescript": "^4.9.5"
+    },
+    "dependencies": {}
+}
