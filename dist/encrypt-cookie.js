@@ -1,5 +1,5 @@
 "use strict";
-/*! encrypt-storejs v2.1.3 | MIT (c) 2024 Abdullah Al Fahim | https://github.com/abfahimb/encrypt-storeJS */
+/*! encrypt-cookiejs v1.0.2 | MIT (c) 2024 Abdullah Al Fahim | https://github.com/abfahimb/encrypt-cookieJS */
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.EncryptCookie = void 0;
 // Enhanced CookieCrypto class

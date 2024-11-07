@@ -1,4 +1,4 @@
-/*! encrypt-storejs v2.1.3 | MIT (c) 2024 Abdullah Al Fahim | https://github.com/abfahimb/encrypt-storeJS */
+/*! encrypt-cookiejs v1.0.2 | MIT (c) 2024 Abdullah Al Fahim | https://github.com/abfahimb/encrypt-cookieJS */
 
 export interface CookieOptions {
     path?: string
