@@ -1,30 +1,297 @@
 # Encrypt-cookiejs (Protected by Secret Key)
 
-**Encrypt-cookiejs**  encrypt-storejs is a lightweight JavaScript package designed to securely manage data in browser cookies using advanced encryption techniques. This package ensures that sensitive data stored in cookies is encrypted, providing a higher level of security for client-side storage. It allows for flexible and customizable cookie management with support for various cookie attributes such as path, domain, expires, sameSite, and secure.
+**Encrypt-cookiejs**  encrypt-cookiejs is a lightweight JavaScript package designed to securely manage data in browser cookies using advanced encryption techniques. This package ensures that sensitive data stored in cookies is encrypted, providing a higher level of security for client-side storage. It allows for flexible and customizable cookie management with support for various cookie attributes such as path, domain, expires, sameSite, and secure.
 
 
 ## Key Features
 
-- **Data Encryption**  
-  Automatically encrypts data before storing it in cookies, ensuring sensitive information remains secure and private. The encryption is performed using a configurable private key and salt.
+- 🔐 Built-in encryption support
+- 📦 Type-safe cookie storage
+- 🛣️ Nested path operations
+- 🎯 Batch operations support
+- 🔄 Automatic serialization/deserialization
+- 🌐 Cross-browser compatibility
+- 🔧 Configurable options
+- 🚀 SSR-friendly
 
-- **Customizable Cookie Options**  
-  Provides support for all standard cookie attributes, including `path`, `expires`, `secure`, `sameSite`, and `httpOnly`, allowing for fine-grained control over cookie behavior and security.
 
-- **Nested Path Support**  
-  Store and retrieve data from deeply nested object paths within cookies, offering flexibility when working with complex data structures.
+## Table of Contents
 
-- **Merge Data**  
-  Supports merging new data with existing cookie data, allowing for incremental updates without overwriting the entire cookie. Ideal for scenarios requiring partial updates.
+- [Installation](#installation)
+- [Basic Usage](#basic-usage)
+- [Advanced Usage](#advanced-usage)
+- [API Reference](#api-reference)
+- [Security Considerations](#security-considerations)
+- [Best Practices](#best-practices)
+- [What Not To Do](#what-not-to-do)
 
-- **Cookie Expiration Management**  
-  Easily extend the expiration of cookies, enabling the refresh of session data and control over the lifespan of cookies.
+## Installation
 
-- **Cross-Domain Cookie Management**  
-  Facilitates managing cookies across different domains, making it easier to store shared data across subdomains or different parts of your web application.
+```bash
+npm install encrypt-cookiejs
+# or
+yarn add encrypt-cookiejs
+# or
+pnpm add encrypt-cookiejs
+```
 
-- **Clear All Cookies**  
-  Includes a utility to clear all cookies for a specific domain or path, allowing privacy control and the ability to easily delete all stored cookies.
+## Basic Usage
 
-- **Secure by Default**  
-  The package encrypts all stored data unless otherwise specified, ensuring that sensitive information is never stored in plain text.
+### 1. Define Your Data Structure (Creating an Instance)
+
+```bash
+import EncryptCookie from 'encrypt-cookiejs'
+
+// Configuration for encryption and cookie handling
+const config = {
+  storageKey: 'myAppData', // Custom key for the cookie storage
+  cryptoConfig: {
+    privateKey: 'your-private-key', // Your secret encryption key
+    encryptByDefault: true // Whether to encrypt data by default
+  }
+}
+
+// Create a new instance of EncryptCookie
+const cookie = new EncryptCookie(config);
+```
+
+```bash
+// Set data
+cookie.set({
+  id: '123',
+  name: 'John Doe',
+  email: 'john@example.com',
+  preferences: {
+    theme: 'light',
+    notifications: true
+  }
+});
+
+// Get all data
+const userData = cookie.get();
+
+// Get specific field
+const userName = cookie.get('name');
+
+// Update data
+cookie.update({
+  preferences: {
+    theme: 'dark'
+  }
+});
+
+// Delete fields
+cookie.deleteFields(['email']);
+
+// Clear all data
+cookie.clear();
+```
+
+### Cookie Options
+
+```base
+  path: '/',
+    expires: 60, (as sec, it will 1 min)
+    domain: 'example.com',
+    secure: true,
+    sameSite: 'Lax',
+    httpOnly: true
+```
+
+## Advanced Usage
+
+### Use Path
+```bash
+// Initialize the cookie manager
+const cookie = new EncryptCookie({ storageKey: 'myAppData' });
+
+// Set some initial data
+cookie.set({ user: { name: 'John Doe', address: { city: 'Los Angeles' } } });
+
+// Get a nested value by path
+const userCity = cookie.getByPath('user.address.city');
+console.log(userCity); // 'Los Angeles'
+
+// Set a new value at a nested path
+cookie.setByPath('user.address.city', 'San Francisco');
+
+// Update an existing nested value (merge objects)
+cookie.updateByPath('user.address', { country: 'USA' });
+
+// Get the updated data
+const updatedAddress = cookie.getByPath('user.address');
+console.log(updatedAddress); // { city: 'San Francisco', country: 'USA' }
+
+// Delete a nested value
+cookie.deleteByPath('user.address.city');
+
+// Verify deletion
+const addressAfterDelete = cookie.getByPath('user.address');
+console.log(addressAfterDelete); // { country: 'USA' }
+
+```
+
+### Cookie validation
+
+```base
+// Example usage of has method
+
+// Check if the cookie contains any data
+const hasData = cookie.has();
+console.log(hasData); // true if data exists, false if cookie is empty
+
+// Check if a specific field exists within the cookie data
+const hasUserField = cookie.has('user');
+console.log(hasUserField); // true if 'user' field exists, false otherwise
+
+const hasEmailField = cookie.has('email');
+console.log(hasEmailField); // true if 'email' field exists within the stored data, false otherwise
+
+```
+
+### Cookie Expiration
+
+```base 
+ cookie.extend(3600);
+
+// Extend the expiration with additional options (e.g., secure or specific path)
+cookie.extend(3600, { secure: true, path: '/' });
+```
+
+### Retrieve All Cookies 
+
+The getAllCookies method retrieves all cookies available in the document, optionally filtering by a specified domain. It returns an object with cookie names as keys and their respective values.
+
+If no domain is provided, it will retrieve all cookies.
+If a domain is specified, it will return only the cookies associated with that domain.
+
+```base
+// Retrieve all cookies
+const allCookies = EncryptCookie.getAllCookies();
+console.log(allCookies); 
+// Output: { "cookie1": "value1", "cookie2": "value2", ... }
+
+// Retrieve cookies specific to a domain
+const domainCookies = EncryptCookie.getAllCookies('example.com');
+console.log(domainCookies); 
+// Output: { "cookie1": "value1", "cookie2": "value2", ... } for cookies on example.com
+
+```
+
+### Clear All Cookies (clearAll)
+
+The clearAll method deletes all cookies associated with the current document, optionally within a specific domain and path.
+
+Parameters:
+domain (optional): The domain where cookies will be cleared. If not specified, it clears cookies for the current document domain.
+path (default: /): The path for the cookies. The default is /, which clears cookies site-wide.
+
+```base 
+// Clear all cookies for the current domain
+EncryptCookie.clearAll();
+
+// Clear all cookies for a specific domain
+EncryptCookie.clearAll('example.com');
+
+// Clear all cookies for a specific domain and path
+EncryptCookie.clearAll('example.com', '/specific-path');
+
+```
+
+## API Reference
+
+### Constructor Options
+
+```typescript
+interface StorageConfig {
+  storageKey: string;
+  cryptoConfig: {
+    privateKey: string;
+    saltLength?: number;
+    encryptByDefault?: boolean;
+  };
+  defaultOptions?: {
+    path?: string;
+    expires?: number | Date;
+    secure?: boolean;
+    domain?: string;
+    sameSite?: 'strict' | 'lax' | 'none';
+    httpOnly?: boolean;
+  };
+}
+```
+
+### Methods
+
+- `set(value, options?, { encrypt?, merge? })`
+- `get(field?)`
+- `getByPath(path)`
+- `setByPath(path, value, options?)`
+- `updateByPath(path, updates)`
+- `deleteByPath(path)`
+- `update(updates, options?)`
+- `deleteFields(fields)`
+- `clear(options?)`
+- `has(field?)`
+- `extend(duration, options?)`
+
+
+## Security Considerations
+
+1. **Private Key Storage**
+   - Never expose your private key in client-side code
+   - Use environment variables
+   - Rotate keys periodically
+
+2. **Cookie Options**
+   - Always use `secure: true` in production
+   - Set appropriate `sameSite` policy
+   - Use `httpOnly` when possible
+
+3. **Data Sensitivity**
+   - Don't store sensitive data in cookies
+   - Minimize stored data
+   - Regularly clear unnecessary data
+
+## Best Practices
+
+✅ **Do:**
+- Use TypeScript interfaces for type safety
+- Implement proper error handling
+- Set appropriate cookie expiration
+- Use batch operations for multiple updates
+- Regularly clear expired cookies
+- Use path-specific operations
+- Implement proper access controls
+
+## What Not To Do
+
+❌ **Don't:**
+```typescript
+// DON'T store sensitive information
+cookieStore.set({
+  creditCard: '1234-5678-9012-3456',
+  ssn: '123-45-6789'
+});
+
+// DON'T use without encryption
+cookieStore.set(data, {}, { encrypt: false });
+
+// DON'T store large amounts of data
+cookieStore.set({
+  hugeDataObject: /* large object */
+});
+
+// DON'T use without proper type definitions
+const unsafeStore = new SecureCookieStore<any>({...});
+
+// DON'T expose private keys
+const store = new SecureCookieStore({
+  cryptoConfig: {
+    privateKey: 'hardcoded-key' // WRONG!
+  }
+});
+
+// DON'T use in security-critical applications
+// This library is for general-purpose storage only
+```

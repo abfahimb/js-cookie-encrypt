@@ -1,7 +1,7 @@
 {
     "name": "encrypt-cookiejs",
     "version": "1.0.0",
-    "description": "lightweight, easy-to-use JavaScript library for securely storing data in the browser's local storage. By employing advanced encryption techniques, encrypt-storejs ensures that sensitive information is safely stored and protected against unauthorized access",
+    "description": "encrypt-cookiejs is a lightweight JavaScript package designed to securely manage data in browser cookies using advanced encryption techniques. This package ensures that sensitive data stored in cookies is encrypted, providing a higher level of security for client-side storage",
     "main": "dist/encrypt-cookie.js",
     "types": "dist/encrypt-cookie.d.ts",
     "browser": "dist/encrypt-cookie.js",
