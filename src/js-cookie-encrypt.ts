@@ -21,7 +21,6 @@ export interface CookieOptions {
     defaultOptions?: CookieOptions
   }
   
-  // Utility type for nested paths
   type PathImpl<T, K extends keyof T> = K extends string
     ? T[K] extends Record<string, any>
       ? T[K] extends ArrayLike<any>
@@ -32,7 +31,6 @@ export interface CookieOptions {
   
   type Path<T> = PathImpl<T, keyof T> | keyof T;
   
-  // Enhanced CookieCrypto class
   class CookieCrypto {
     private privateKey: string
     private saltLength: number
@@ -101,7 +99,6 @@ export interface CookieOptions {
     }
   }
   
-  // Main JsCookieEncrypt class with enhanced features
   export class JsCookieEncrypt<T extends Record<string, any>> {
     private storageKey: string
     private crypto: CookieCrypto
@@ -136,7 +133,6 @@ export interface CookieOptions {
 
       let cookieString = `${this.storageKey}=${encodedData}`;
 
-      // Append cookie options in the same way as in the provided snippet
       if (mergedOptions.path) {
         cookieString += `; path=${mergedOptions.path}`;
       }
@@ -160,11 +156,9 @@ export interface CookieOptions {
         cookieString += '; httponly';
       }
 
-      // Set the cookie
       document.cookie = cookieString;
     }
   
-    // Get value by nested path
     getByPath<K extends Path<T>>(path: K): any {
       const data = this.get()
       if (!data) return null
@@ -174,7 +168,6 @@ export interface CookieOptions {
       }, data)
     }
   
-    // Set value by nested path
     setByPath<K extends Path<T>>(path: K, value: any, options: CookieOptions = {}): void {
       const data = this.get() || {} as T
       const pathParts = path.toString().split('.')
@@ -207,10 +200,8 @@ export interface CookieOptions {
 
       const key = pathParts[pathParts?.length - 1]
       if (key in current && typeof current[key] === 'object' && typeof value === 'object') {
-        // Merge the objects if the key exists and both are objects
         current[key] = { ...current[key], ...value }
       } else {
-        // Otherwise, just set the value
         current[key] = value
       }
 
@@ -223,37 +214,22 @@ export interface CookieOptions {
       const pathParts = path.toString().split('.')
       let current: any = data
 
-      // Traverse the path to get to the parent object
+
       for (let i = 0; i < pathParts.length - 1; i++) {
         const key = pathParts[i]
         if (!(key in current)) {
-          return // Path does not exist, nothing to delete
+          return
         }
         current = current[key]
       }
 
       const lastKey = pathParts[pathParts.length - 1]
       if (lastKey in current) {
-        delete current[lastKey] // Delete the field at the path
-        this.set(data) // Update the stored data
+        delete current[lastKey]
+        this.set(data)
       }
     }
-    // Check if cookie exists
-    has(field?: keyof T): boolean {
-        const data = this.get()
-        if (!data) return false
-      
-        if (field) {
-          // Type guard to ensure `data` is an object
-          if (typeof data === 'object' && data !== null) {
-            return field in data
-          }
-          return false
-        }
-        return true
-      }
 
-    // Extend cookie expiration
     extend(duration: number, options: CookieOptions = {}): void {
       const data = this.get()
       if (data) {
@@ -264,7 +240,6 @@ export interface CookieOptions {
       }
     }
   
-    // Get all cookies with same domain
     static getAllCookies(domain?: string): Record<string, string> {
       const cookies: Record<string, string> = {}
       if (typeof document === 'undefined') return cookies
@@ -279,33 +254,34 @@ export interface CookieOptions {
       return cookies
     }
   
-    // Clear all cookies with same domain
-    static clearAll(domain?: string, path: string = '/'): void {
+
+    static clearAll(domain?: string, path: string = '/', clearSubDomain: boolean = false): void {
+      const hostnameParts = location.hostname.split('.');
+      const isLocalhost = hostnameParts.length === 1 && hostnameParts[0] === 'localhost';
+      const subDomain = isLocalhost
+          ? ''
+          : hostnameParts.length > 1
+              ? hostnameParts.slice(1).join('.')
+              : location.hostname;
+
+
       const cookies = JsCookieEncrypt.getAllCookies(domain)
       Object.keys(cookies).forEach(name => {
         let cookieString = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=${path}`
         if (domain) cookieString += `; domain=${domain}`
         document.cookie = cookieString
       })
+
+    if(clearSubDomain){
+      const subDomainCookies = JsCookieEncrypt.getAllCookies(subDomain)
+      Object.keys(subDomainCookies).forEach(name => {
+        let cookieString = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=${path}`
+        if (domain) cookieString += `; domain=${subDomain}`
+        document.cookie = cookieString
+      })
+    }
     }
 
-    clearAllCookies() {
-      const isLocalhost = location.hostname === 'localhost';
-      const domain = isLocalhost
-          ? ''
-          : location.hostname.split('.').slice(-2).join('.');
-
-      const paths = ['/', ''];
-
-      paths.forEach((path) => {
-        document.cookie = `${this.storageKey}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=${path};`;
-        if (!isLocalhost) {
-          document.cookie = `${this.storageKey}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=${path}; domain=.${domain};`;
-        }
-      });
-    }
-
-    // Original methods with some enhancements
     get<K extends keyof T>(field?: K): T | T[K] | null {
       try {
         if (typeof document === 'undefined') return null;
@@ -329,22 +305,7 @@ export interface CookieOptions {
         return parsedData;
       } catch (error) {
         console.error('Failed to retrieve or parse cookie data:', error);
-        const hostnameParts = location.hostname.split('.');
-        const isLocalhost = hostnameParts.length === 1 && hostnameParts[0] === 'localhost';
-        const domain = isLocalhost
-            ? ''
-            : hostnameParts.length > 1
-                ? hostnameParts.slice(1).join('.')
-                : location.hostname;
-
-        const paths = ['/', ''];
-
-        paths.forEach((path) => {
-          document.cookie = `${this.storageKey}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=${path};`;
-          if (!isLocalhost) {
-            document.cookie = `${this.storageKey}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=${path}; domain=.${domain};`;
-          }
-        });
+        JsCookieEncrypt.clearAll(undefined,'/',true)
         return null;
       }
     }
@@ -372,8 +333,7 @@ export interface CookieOptions {
       this.appendCookieOptions(cookieString, mergedOptions)
       document.cookie = cookieString
     }
-  
-    // Utility methods
+
     private appendCookieOptions(cookieString: string, options: CookieOptions): string {
       if (options.expires) {
         const expiresDate = typeof options.expires === 'number'

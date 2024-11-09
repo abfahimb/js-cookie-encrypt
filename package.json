@@ -2,13 +2,13 @@
     "name": "js-cookie-encrypt",
     "version": "1.0.2",
     "description": "js-cookie-encrypt is a lightweight JavaScript package designed to securely manage data in browser cookies using advanced encryption techniques. This package ensures that sensitive data stored in cookies is encrypted, providing a higher level of security for client-side storage",
-    "main": "dist/js-cookie-encrypt.js",
+    "main": "dist/js-cookie-encrypt.min.js",
     "types": "dist/js-cookie-encrypt.d.ts",
-    "browser": "dist/js-cookie-encrypt.js",
     "unpkg": "dist/js-cookie-encrypt.min.js",
     "jsdelivr": "dist/js-cookie-encrypt.min.js",
     "files": [
-        "dist",
+        "dist/js-cookie-encrypt.min.js",
+        "dist/js-cookie-encrypt.d.ts",
         "LICENSE",
         "README.md"
     ],

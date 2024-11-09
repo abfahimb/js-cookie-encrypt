@@ -2,7 +2,6 @@
 /*! js-cookie-encrypt v1.0.2 | MIT (c) 2024 Abdullah Al Fahim | https://github.com/abfahimb/js-cookie-encrypt */
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.JsCookieEncrypt = void 0;
-// Enhanced CookieCrypto class
 class CookieCrypto {
     constructor(config) {
         this.privateKey = config.privateKey;
@@ -52,7 +51,6 @@ class CookieCrypto {
         return result;
     }
 }
-// Main JsCookieEncrypt class with enhanced features
 class JsCookieEncrypt {
     constructor(config) {
         var _a;
@@ -75,7 +73,6 @@ class JsCookieEncrypt {
             ? this.crypto.encrypt(JSON.stringify(finalValue))
             : JSON.stringify(finalValue);
         let cookieString = `${this.storageKey}=${encodedData}`;
-        // Append cookie options in the same way as in the provided snippet
         if (mergedOptions.path) {
             cookieString += `; path=${mergedOptions.path}`;
         }
@@ -97,10 +94,8 @@ class JsCookieEncrypt {
         if (mergedOptions.httpOnly) {
             cookieString += '; httponly';
         }
-        // Set the cookie
         document.cookie = cookieString;
     }
-    // Get value by nested path
     getByPath(path) {
         const data = this.get();
         if (!data)
@@ -109,7 +104,6 @@ class JsCookieEncrypt {
             return obj && obj[key];
         }, data);
     }
-    // Set value by nested path
     setByPath(path, value, options = {}) {
         const data = this.get() || {};
         const pathParts = path.toString().split('.');
@@ -137,11 +131,9 @@ class JsCookieEncrypt {
         }
         const key = pathParts[(pathParts === null || pathParts === void 0 ? void 0 : pathParts.length) - 1];
         if (key in current && typeof current[key] === 'object' && typeof value === 'object') {
-            // Merge the objects if the key exists and both are objects
             current[key] = Object.assign(Object.assign({}, current[key]), value);
         }
         else {
-            // Otherwise, just set the value
             current[key] = value;
         }
         this.set(data, options);
@@ -152,42 +144,25 @@ class JsCookieEncrypt {
         const data = this.get() || {};
         const pathParts = path.toString().split('.');
         let current = data;
-        // Traverse the path to get to the parent object
         for (let i = 0; i < pathParts.length - 1; i++) {
             const key = pathParts[i];
             if (!(key in current)) {
-                return; // Path does not exist, nothing to delete
+                return;
             }
             current = current[key];
         }
         const lastKey = pathParts[pathParts.length - 1];
         if (lastKey in current) {
-            delete current[lastKey]; // Delete the field at the path
-            this.set(data); // Update the stored data
+            delete current[lastKey];
+            this.set(data);
         }
     }
-    // Check if cookie exists
-    has(field) {
-        const data = this.get();
-        if (!data)
-            return false;
-        if (field) {
-            // Type guard to ensure `data` is an object
-            if (typeof data === 'object' && data !== null) {
-                return field in data;
-            }
-            return false;
-        }
-        return true;
-    }
-    // Extend cookie expiration
     extend(duration, options = {}) {
         const data = this.get();
         if (data) {
             this.set(data, Object.assign(Object.assign({}, options), { expires: new Date(Date.now() + duration * 1000) }));
         }
     }
-    // Get all cookies with same domain
     static getAllCookies(domain) {
         const cookies = {};
         if (typeof document === 'undefined')
@@ -200,8 +175,14 @@ class JsCookieEncrypt {
         });
         return cookies;
     }
-    // Clear all cookies with same domain
-    static clearAll(domain, path = '/') {
+    static clearAll(domain, path = '/', clearSubDomain = false) {
+        const hostnameParts = location.hostname.split('.');
+        const isLocalhost = hostnameParts.length === 1 && hostnameParts[0] === 'localhost';
+        const subDomain = isLocalhost
+            ? ''
+            : hostnameParts.length > 1
+                ? hostnameParts.slice(1).join('.')
+                : location.hostname;
         const cookies = JsCookieEncrypt.getAllCookies(domain);
         Object.keys(cookies).forEach(name => {
             let cookieString = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=${path}`;
@@ -209,21 +190,16 @@ class JsCookieEncrypt {
                 cookieString += `; domain=${domain}`;
             document.cookie = cookieString;
         });
+        if (clearSubDomain) {
+            const subDomainCookies = JsCookieEncrypt.getAllCookies(subDomain);
+            Object.keys(subDomainCookies).forEach(name => {
+                let cookieString = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=${path}`;
+                if (domain)
+                    cookieString += `; domain=${subDomain}`;
+                document.cookie = cookieString;
+            });
+        }
     }
-    clearAllCookies() {
-        const isLocalhost = location.hostname === 'localhost';
-        const domain = isLocalhost
-            ? ''
-            : location.hostname.split('.').slice(-2).join('.');
-        const paths = ['/', ''];
-        paths.forEach((path) => {
-            document.cookie = `${this.storageKey}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=${path};`;
-            if (!isLocalhost) {
-                document.cookie = `${this.storageKey}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=${path}; domain=.${domain};`;
-            }
-        });
-    }
-    // Original methods with some enhancements
     get(field) {
         try {
             if (typeof document === 'undefined')
@@ -246,22 +222,7 @@ class JsCookieEncrypt {
         }
         catch (error) {
             console.error('Failed to retrieve or parse cookie data:', error);
-            const hostnameParts = location.hostname.split('.');
-            const isLocalhost = hostnameParts.length === 1 && hostnameParts[0] === 'localhost';
-            const domain = isLocalhost
-                ? ''
-                : hostnameParts.length > 1
-                    ? hostnameParts.slice(1).join('.')
-                    : location.hostname;
-            const paths = ['/', '']; // Ensures cookies are cleared across different path levels
-            paths.forEach((path) => {
-                // Clear for the current domain
-                document.cookie = `${this.storageKey}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=${path};`;
-                // Clear for the root domain if not localhost
-                if (!isLocalhost) {
-                    document.cookie = `${this.storageKey}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=${path}; domain=.${domain};`;
-                }
-            });
+            JsCookieEncrypt.clearAll(undefined, '/', true);
             return null;
         }
     }
@@ -285,7 +246,6 @@ class JsCookieEncrypt {
         this.appendCookieOptions(cookieString, mergedOptions);
         document.cookie = cookieString;
     }
-    // Utility methods
     appendCookieOptions(cookieString, options) {
         if (options.expires) {
             const expiresDate = typeof options.expires === 'number'
