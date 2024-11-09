@@ -1,19 +1,20 @@
 {
-    "name": "encrypt-cookiejs",
-    "version": "1.0.2",
-    "description": "encrypt-cookiejs is a lightweight JavaScript package designed to securely manage data in browser cookies using advanced encryption techniques. This package ensures that sensitive data stored in cookies is encrypted, providing a higher level of security for client-side storage",
-    "main": "dist/encrypt-cookie.js",
-    "types": "dist/encrypt-cookie.d.ts",
-    "browser": "dist/encrypt-cookie.js",
-    "unpkg": "dist/encrypt-cookie.min.js",
-    "jsdelivr": "dist/encrypt-cookie.min.js",
+    "name": "js-cookie-encrypt",
+    "version": "1.0.1",
+    "description": "js-cookie-encrypt is a lightweight JavaScript package designed to securely manage data in browser cookies using advanced encryption techniques. This package ensures that sensitive data stored in cookies is encrypted, providing a higher level of security for client-side storage",
+    "main": "dist/js-cookie-encrypt.js",
+    "types": "dist/js-cookie-encrypt.d.ts",
+    "browser": "dist/js-cookie-encrypt.js",
+    "unpkg": "dist/js-cookie-encrypt.min.js",
+    "jsdelivr": "dist/js-cookie-encrypt.min.js",
     "files": [
         "dist",
         "LICENSE",
         "README.md"
     ],
     "keywords": [
-        "encrypt-cookiejs",
+        "js-cookie-encrypt",
+        "js-cookie",
         "cookie",
         "cookies",
         "browser",
@@ -22,15 +23,15 @@
         "browserify",
         "encryption"
     ],
-    "homepage": "https://github.com/abfahimb/encrypt-cookieJS#readme",
+    "homepage": "https://github.com/abfahimb/js-cookie-encrypt#readme",
     "repository": {
         "type": "git",
-        "url": "https://github.com/abfahimb/encrypt-cookieJS.git"
+        "url": "https://github.com/abfahimb/js-cookie-encrypt.git"
     },
     "author": "Abdullah Al Fahim",
     "license": "MIT",
     "scripts": {
-        "build": "tsc && terser dist/encrypt-cookie.js -o dist/encrypt-cookie.min.js --compress --mangle --comments '/^!/'",
+        "build": "tsc && terser dist/js-cookie-encrypt.js -o dist/js-cookie-encrypt.min.js --compress --mangle --comments '/^!/'",
         "prepare": "npm run build"
     },
     "devDependencies": {

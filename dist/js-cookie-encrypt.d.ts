@@ -1,4 +1,4 @@
-/*! encrypt-cookiejs v1.0.2 | MIT (c) 2024 Abdullah Al Fahim | https://github.com/abfahimb/encrypt-cookieJS */
+/*! js-cookie-encrypt v1.0.2 | MIT (c) 2024 Abdullah Al Fahim | https://github.com/abfahimb/js-cookie-encrypt */
 export interface CookieOptions {
     path?: string;
     expires?: number | Date;
@@ -19,7 +19,7 @@ export interface StorageConfig {
 }
 type PathImpl<T, K extends keyof T> = K extends string ? T[K] extends Record<string, any> ? T[K] extends ArrayLike<any> ? K | `${K}.${PathImpl<T[K], Exclude<keyof T[K], keyof any[]>>}` : K | `${K}.${PathImpl<T[K], keyof T[K]>}` : K : never;
 type Path<T> = PathImpl<T, keyof T> | keyof T;
-export declare class EncryptCookie<T extends Record<string, any>> {
+export declare class JsCookieEncrypt<T extends Record<string, any>> {
     private storageKey;
     private crypto;
     private defaultOptions;
@@ -43,4 +43,4 @@ export declare class EncryptCookie<T extends Record<string, any>> {
     clear(options?: CookieOptions): void;
     private appendCookieOptions;
 }
-export default EncryptCookie;
+export default JsCookieEncrypt;

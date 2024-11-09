@@ -1,7 +1,7 @@
 "use strict";
-/*! encrypt-cookiejs v1.0.2 | MIT (c) 2024 Abdullah Al Fahim | https://github.com/abfahimb/encrypt-cookieJS */
+/*! js-cookie-encrypt v1.0.2 | MIT (c) 2024 Abdullah Al Fahim | https://github.com/abfahimb/js-cookie-encrypt */
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.EncryptCookie = void 0;
+exports.JsCookieEncrypt = void 0;
 // Enhanced CookieCrypto class
 class CookieCrypto {
     constructor(config) {
@@ -52,8 +52,8 @@ class CookieCrypto {
         return result;
     }
 }
-// Main EncryptCookie class with enhanced features
-class EncryptCookie {
+// Main JsCookieEncrypt class with enhanced features
+class JsCookieEncrypt {
     constructor(config) {
         var _a;
         this.storageKey = config.storageKey;
@@ -202,7 +202,7 @@ class EncryptCookie {
     }
     // Clear all cookies with same domain
     static clearAll(domain, path = '/') {
-        const cookies = EncryptCookie.getAllCookies(domain);
+        const cookies = JsCookieEncrypt.getAllCookies(domain);
         Object.keys(cookies).forEach(name => {
             let cookieString = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=${path}`;
             if (domain)
@@ -278,6 +278,6 @@ class EncryptCookie {
         return cookieString;
     }
 }
-exports.EncryptCookie = EncryptCookie;
-exports.default = EncryptCookie;
-//# sourceMappingURL=encrypt-cookie.js.map
+exports.JsCookieEncrypt = JsCookieEncrypt;
+exports.default = JsCookieEncrypt;
+//# sourceMappingURL=js-cookie-encrypt.js.map

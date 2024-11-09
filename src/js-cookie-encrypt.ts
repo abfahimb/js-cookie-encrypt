@@ -1,4 +1,4 @@
-/*! encrypt-cookiejs v1.0.2 | MIT (c) 2024 Abdullah Al Fahim | https://github.com/abfahimb/encrypt-cookieJS */
+/*! js-cookie-encrypt v1.0.2 | MIT (c) 2024 Abdullah Al Fahim | https://github.com/abfahimb/js-cookie-encrypt */
 
 export interface CookieOptions {
     path?: string
@@ -101,8 +101,8 @@ export interface CookieOptions {
     }
   }
   
-  // Main EncryptCookie class with enhanced features
-  export class EncryptCookie<T extends Record<string, any>> {
+  // Main JsCookieEncrypt class with enhanced features
+  export class JsCookieEncrypt<T extends Record<string, any>> {
     private storageKey: string
     private crypto: CookieCrypto
     private defaultOptions: CookieOptions
@@ -281,7 +281,7 @@ export interface CookieOptions {
   
     // Clear all cookies with same domain
     static clearAll(domain?: string, path: string = '/'): void {
-      const cookies = EncryptCookie.getAllCookies(domain)
+      const cookies = JsCookieEncrypt.getAllCookies(domain)
       Object.keys(cookies).forEach(name => {
         let cookieString = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=${path}`
         if (domain) cookieString += `; domain=${domain}`
@@ -360,4 +360,4 @@ export interface CookieOptions {
     }
   }
 
-  export default EncryptCookie;
+  export default JsCookieEncrypt;

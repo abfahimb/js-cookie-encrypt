@@ -1,14 +1,21 @@
-# Encrypt-cookiejs (Protected by Secret Key)
+# JS-cookie-encrypt (Protected by Secret Key)
 
-**Encrypt-cookiejs**  encrypt-cookiejs is a lightweight JavaScript package designed to securely manage data in browser cookies using advanced encryption techniques. This package ensures that sensitive data stored in cookies is encrypted, providing a higher level of security for client-side storage. It allows for flexible and customizable cookie management with support for various cookie attributes such as path, domain, expires, sameSite, and secure.
+**JS-cookie-encrypt** is a lightweight JavaScript package designed to securely manage data in browser cookies using advanced encryption techniques. This package ensures that sensitive data stored in cookies is encrypted, providing a higher level of security for client-side storage. It allows for flexible and customizable cookie management with support for various cookie attributes such as path, domain, expires, sameSite, and secure.
 
+Your cookie data will be securely stored in an encrypted format, ensuring that sensitive information remains protected and accessible only to you.
+
+## Protecting Your Cookie Data
+
+Your Cookie Will be some thing like this only you can read / access it.
+```Cookie
+UHzDpCrDicOQd1XCssKMw5F0w60OLsK3WDvDqTnDgcOBBQ7Do8Kew4R/w6oGMcKzSznDpjTCjMOCRlzCqMKSwoQ3wr0DM8K0TDvCvXrDiMOMRl/CoMOdwoo5w7oHPMK7TzvCvXrDjcOGQVXCqcKWw4tbw7gHPMK7TzfDpDfDgcKGWg==
+```
 
 ## Key Features
 
 - 🔐 Built-in encryption support
 - 📦 Type-safe cookie storage
 - 🛣️ Nested path operations
-- 🎯 Batch operations support
 - 🔄 Automatic serialization/deserialization
 - 🌐 Cross-browser compatibility
 - 🔧 Configurable options
@@ -29,11 +36,11 @@
 ## Installation
 
 ```bash
-npm install encrypt-cookiejs
+npm install js-cookie-encrypt
 # or
-yarn add encrypt-cookiejs
+yarn add js-cookie-encrypt
 # or
-pnpm add encrypt-cookiejs
+pnpm add js-cookie-encrypt
 ```
 
 ## Basic Usage
@@ -41,7 +48,7 @@ pnpm add encrypt-cookiejs
 ### 1. Define Your Data Structure (Creating an Instance)
 
 ```bash
-import EncryptCookie from 'encrypt-cookiejs'
+import JsCookieEncrypt from 'js-cookie-encrypt'
 
 // Configuration for encryption and cookie handling
 const config = {
@@ -52,8 +59,8 @@ const config = {
   }
 }
 
-// Create a new instance of EncryptCookie
-const cookie = new EncryptCookie(config);
+// Create a new instance of JsCookieEncrypt
+const cookie = new JsCookieEncrypt(config);
 ```
 
 ```bash
@@ -104,7 +111,7 @@ cookie.clear();
 ### Use Path
 ```bash
 // Initialize the cookie manager
-const cookie = new EncryptCookie({ storageKey: 'myAppData' });
+const cookie = new JsCookieEncrypt({ storageKey: 'myAppData' });
 
 // Set some initial data
 cookie.set({ user: { name: 'John Doe', address: { city: 'Los Angeles' } } });
@@ -168,12 +175,12 @@ If a domain is specified, it will return only the cookies associated with that d
 
 ```base
 // Retrieve all cookies
-const allCookies = EncryptCookie.getAllCookies();
+const allCookies = JsCookieEncrypt.getAllCookies();
 console.log(allCookies); 
 // Output: { "cookie1": "value1", "cookie2": "value2", ... }
 
 // Retrieve cookies specific to a domain
-const domainCookies = EncryptCookie.getAllCookies('example.com');
+const domainCookies = JsCookieEncrypt.getAllCookies('example.com');
 console.log(domainCookies); 
 // Output: { "cookie1": "value1", "cookie2": "value2", ... } for cookies on example.com
 
@@ -189,13 +196,13 @@ path (default: /): The path for the cookies. The default is /, which clears cook
 
 ```base 
 // Clear all cookies for the current domain
-EncryptCookie.clearAll();
+JsCookieEncrypt.clearAll();
 
 // Clear all cookies for a specific domain
-EncryptCookie.clearAll('example.com');
+JsCookieEncrypt.clearAll('example.com');
 
 // Clear all cookies for a specific domain and path
-EncryptCookie.clearAll('example.com', '/specific-path');
+JsCookieEncrypt.clearAll('example.com', '/specific-path');
 
 ```
 
