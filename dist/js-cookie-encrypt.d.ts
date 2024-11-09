@@ -37,6 +37,7 @@ export declare class JsCookieEncrypt<T extends Record<string, any>> {
     extend(duration: number, options?: CookieOptions): void;
     static getAllCookies(domain?: string): Record<string, string>;
     static clearAll(domain?: string, path?: string): void;
+    clearAllCookies(): void;
     get<K extends keyof T>(field?: K): T | T[K] | null;
     update(updates: Partial<T>, options?: CookieOptions): void;
     deleteFields(fields: Array<keyof T>): void;

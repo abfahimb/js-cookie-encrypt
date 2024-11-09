@@ -289,15 +289,31 @@ export interface CookieOptions {
       })
     }
 
+    clearAllCookies() {
+      const isLocalhost = location.hostname === 'localhost';
+      const domain = isLocalhost
+          ? ''
+          : location.hostname.split('.').slice(-2).join('.');
+
+      const paths = ['/', ''];
+
+      paths.forEach((path) => {
+        document.cookie = `${this.storageKey}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=${path};`;
+        if (!isLocalhost) {
+          document.cookie = `${this.storageKey}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=${path}; domain=.${domain};`;
+        }
+      });
+    }
+
     // Original methods with some enhancements
     get<K extends keyof T>(field?: K): T | T[K] | null {
       try {
-        if (typeof document === 'undefined') return null
-  
-        const match = document.cookie.match(new RegExp('(^| )' + this.storageKey + '=([^;]+)'))
-        const encodedData = match ? match[2] : null
-  
-        if (!encodedData) return null
+        if (typeof document === 'undefined') return null;
+
+        const match = document.cookie.match(new RegExp('(^| )' + this.storageKey + '=([^;]+)'));
+        const encodedData = match ? match[2] : null;
+
+        if (!encodedData) return null;
 
         let parsedData: T;
         if (this.encryptByDefault) {
@@ -305,16 +321,31 @@ export interface CookieOptions {
         } else {
           parsedData = JSON.parse(encodedData) as T;
         }
-  
+
         if (field && parsedData && field in parsedData) {
-          return parsedData[field] || null
+          return parsedData[field] || null;
         }
-  
-        return parsedData
+
+        return parsedData;
       } catch (error) {
-        console.error('Failed to retrieve or parse cookie data:', error)
-        this.clear()
-        return null
+        console.error('Failed to retrieve or parse cookie data:', error);
+        const hostnameParts = location.hostname.split('.');
+        const isLocalhost = hostnameParts.length === 1 && hostnameParts[0] === 'localhost';
+        const domain = isLocalhost
+            ? ''
+            : hostnameParts.length > 1
+                ? hostnameParts.slice(1).join('.')
+                : location.hostname;
+
+        const paths = ['/', ''];
+
+        paths.forEach((path) => {
+          document.cookie = `${this.storageKey}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=${path};`;
+          if (!isLocalhost) {
+            document.cookie = `${this.storageKey}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=${path}; domain=.${domain};`;
+          }
+        });
+        return null;
       }
     }
   

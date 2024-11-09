@@ -210,6 +210,19 @@ class JsCookieEncrypt {
             document.cookie = cookieString;
         });
     }
+    clearAllCookies() {
+        const isLocalhost = location.hostname === 'localhost';
+        const domain = isLocalhost
+            ? ''
+            : location.hostname.split('.').slice(-2).join('.');
+        const paths = ['/', ''];
+        paths.forEach((path) => {
+            document.cookie = `${this.storageKey}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=${path};`;
+            if (!isLocalhost) {
+                document.cookie = `${this.storageKey}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=${path}; domain=.${domain};`;
+            }
+        });
+    }
     // Original methods with some enhancements
     get(field) {
         try {
@@ -233,7 +246,22 @@ class JsCookieEncrypt {
         }
         catch (error) {
             console.error('Failed to retrieve or parse cookie data:', error);
-            this.clear();
+            const hostnameParts = location.hostname.split('.');
+            const isLocalhost = hostnameParts.length === 1 && hostnameParts[0] === 'localhost';
+            const domain = isLocalhost
+                ? ''
+                : hostnameParts.length > 1
+                    ? hostnameParts.slice(1).join('.')
+                    : location.hostname;
+            const paths = ['/', '']; // Ensures cookies are cleared across different path levels
+            paths.forEach((path) => {
+                // Clear for the current domain
+                document.cookie = `${this.storageKey}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=${path};`;
+                // Clear for the root domain if not localhost
+                if (!isLocalhost) {
+                    document.cookie = `${this.storageKey}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=${path}; domain=.${domain};`;
+                }
+            });
             return null;
         }
     }
