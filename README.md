@@ -1,46 +1,39 @@
-# JS-cookie-encrypt (Secure & Protected by Private Keys)
+# js-cookie-encrypt
 
-**JS-cookie-encrypt** is a lightweight, high-performance JavaScript/TypeScript package designed to securely manage data in browser cookies using advanced encryption techniques. This package ensures that sensitive data stored in cookies is encrypted and protected, providing a higher level of security for client-side storage.
+[![npm version](https://img.shields.io/npm/v/js-cookie-encrypt.svg?style=flat-square)](https://www.npmjs.com/package/js-cookie-encrypt)
+[![npm downloads](https://img.shields.io/npm/dm/js-cookie-encrypt.svg?style=flat-square)](https://www.npmjs.com/package/js-cookie-encrypt)
+[![license](https://img.shields.io/npm/l/js-cookie-encrypt.svg?style=flat-square)](https://github.com/abfahimb/js-cookie-encrypt/blob/main/LICENSE)
+[![TypeScript](https://img.shields.io/badge/TypeScript-ready-blue?style=flat-square)](https://www.typescriptlang.org/)
 
-It offers flexible configurations supporting standard cookie attributes (path, domain, expires, sameSite, secure), and introduces modern cryptographic standards, change subscriptions, environment fallbacks, and precise deep type-safe path manipulations.
+**The only actively maintained, client-side encrypted cookie library for browsers.**
+
+`js-cookie` is the gold standard for cookie management — but it has zero encryption. `crypto-js` has encryption — but it's abandoned and bloated. `js-cookie-encrypt` fills that gap: the familiar simplicity of `js-cookie` combined with native **AES-GCM 256-bit** encryption via the browser's built-in `SubtleCrypto` API. Zero dependencies.
+
+```bash
+npm install js-cookie-encrypt
+```
 
 ```
-// Example of how the raw cookie appears in the browser:
-gcm:aGVsbG8gd29ybGQ...  (AES-GCM, recommended)
-rc4:UHzDpCrDicOQd1XC...  (RC4 legacy)
+// What your cookies look like in the browser — not readable without your key:
+gcm:aGVsbG8td29ybGQtdGhpcy1pcy1lbmNyeXB0ZWQ...
 ```
 
 ---
 
-## Key Features
+## Why js-cookie-encrypt?
 
-* **AES-GCM 256-bit (Recommended)**: Native asynchronous authenticated encryption via the browser's Web Cryptography API (`SubtleCrypto`). Use this in production.
-* **Legacy Synchronous Ciphers (RC4 / XOR)**: Available for environments that cannot use async APIs. Not recommended for new projects — RC4 and XOR are weak ciphers. A warning is logged when they are used.
-* **Enterprise Key Rotation**: Pass an array of keys in `privateKey`. The first key encrypts; the rest are fallback decryption keys. Cookies are automatically re-encrypted with the new primary key on read.
-* **All Four Change Events**: Subscribe to `set`, `update`, `delete`, and `clear` events in real-time. Each method fires the correct event type.
-* **SSR-Friendly & Incognito Fallback**: Automatically falls back to an in-memory cache when running server-side (Next.js/Nuxt) or when cookies are blocked.
-* **Deep Nested Path Operations**: Retrieve, set, update, or delete deep nested values (`user.preferences.theme`) with full TypeScript type inference.
-* **Cookie Size Warnings**: Warns if a cookie payload exceeds the standard 4KB browser limit.
-* **Input Validation**: Throws on empty `storageKey` or `privateKey` at construction time.
-* **Regex-Injection Safe**: Cookie names are escaped before use in regex matching.
-* **URL-Encoded Storage**: Cookie names and values are `encodeURIComponent`-encoded on write and decoded on read.
-
----
-
-## Table of Contents
-
-* [Installation](#installation)
-* [Basic Usage (Synchronous)](#basic-usage-synchronous)
-* [Advanced Features](#advanced-features)
-  * [1. Asynchronous AES-GCM 256-bit (Recommended)](#1-asynchronous-aes-gcm-256-bit-recommended)
-  * [2. Key Rotation](#2-key-rotation)
-  * [3. Change Subscriptions (Events)](#3-change-subscriptions-events)
-  * [4. Deep Path Operations](#4-deep-path-operations)
-  * [5. SSR & In-Memory Fallback](#5-ssr--in-memory-fallback)
-* [API Reference](#api-reference)
-* [Security Considerations](#security-considerations)
-* [Migration Notes](#migration-notes)
-* [License](#license)
+| Feature | js-cookie | universal-cookie | crypto-js | **js-cookie-encrypt** |
+|---|:---:|:---:|:---:|:---:|
+| Browser cookies | ✅ | ✅ | ❌ | ✅ |
+| AES-GCM 256-bit encryption | ❌ | ❌ | ✅ | ✅ |
+| Native Web Crypto API | ❌ | ❌ | ❌ | ✅ |
+| Zero dependencies | ✅ | ❌ | ❌ | ✅ |
+| TypeScript types | ✅ | ✅ | ✅ | ✅ |
+| Key rotation | ❌ | ❌ | ❌ | ✅ |
+| Deep path operations | ❌ | ❌ | ❌ | ✅ |
+| Change events | ❌ | ❌ | ❌ | ✅ |
+| SSR / Next.js safe | ⚠️ | ✅ | ❌ | ✅ |
+| Actively maintained | ✅ | ✅ | ❌ | ✅ |
 
 ---
 
@@ -54,111 +47,122 @@ yarn add js-cookie-encrypt
 pnpm add js-cookie-encrypt
 ```
 
+**CDN (browser):**
+```html
+<script src="https://cdn.jsdelivr.net/npm/js-cookie-encrypt/dist/js-cookie-encrypt.min.js"></script>
+```
+
 ---
 
-## Basic Usage (Synchronous)
-
-> **Note:** RC4 is a legacy cipher and logs a warning. For production use, see [AES-GCM](#1-asynchronous-aes-gcm-256-bit-recommended) below.
+## Quick Start
 
 ```typescript
 import JsCookieEncrypt from 'js-cookie-encrypt';
 
-const cookieStore = new JsCookieEncrypt({
-  storageKey: 'userProfile',
+const store = new JsCookieEncrypt({
+  storageKey: 'session',
   cryptoConfig: {
-    privateKey: 'your-private-key-here',
-    algorithm: 'rc4',           // legacy — use 'aes-gcm' for production
-    encryptByDefault: true,
+    privateKey: 'your-secret-key',
+    algorithm: 'aes-gcm',           // AES-GCM 256-bit — recommended
   }
 });
 
-// Set
-cookieStore.set({
-  id: 101,
-  name: 'John Doe',
-  preferences: { theme: 'dark', notifications: true }
-});
+// Write — stored as unreadable ciphertext in the browser
+await store.setAsync({ userId: 42, role: 'admin', theme: 'dark' });
 
-// Get
-const profile = cookieStore.get();
-console.log(profile?.name); // 'John Doe'
+// Read — decrypted automatically
+const session = await store.getAsync();
+console.log(session?.role); // 'admin'
 
-// Get single field
-const name = cookieStore.get('name'); // 'John Doe'
+// Update a field
+await store.updateAsync({ theme: 'light' });
 
-// Update fields (fires 'update' event)
-cookieStore.update({ name: 'Johnathan Doe' });
+// Deep nested access
+await store.setByPathAsync('preferences.notifications', true);
+const theme = await store.getByPathAsync('preferences.theme');
 
-// Delete specific fields (fires 'delete' event)
-cookieStore.deleteFields(['name']);
-
-// Clear cookie (fires 'clear' event)
-cookieStore.clear();
+// Delete
+await store.clearAsync();
 ```
 
 ---
 
-## Advanced Features
+## Table of Contents
 
-### 1. Asynchronous AES-GCM 256-bit (Recommended)
+- [Quick Start](#quick-start)
+- [Features](#features)
+- [Algorithms](#algorithms)
+- [Key Rotation](#key-rotation)
+- [Change Events](#change-events)
+- [Deep Path Operations](#deep-path-operations)
+- [SSR & Next.js](#ssr--nextjs)
+- [Framework Examples](#framework-examples)
+- [API Reference](#api-reference)
+- [Security Considerations](#security-considerations)
+- [Migration from 1.0.x](#migration-from-10x)
+- [License](#license)
 
-AES-GCM is authenticated encryption — it provides both confidentiality and integrity. It uses the browser's native `SubtleCrypto` API and requires the `*Async` methods:
+---
+
+## Features
+
+- **AES-GCM 256-bit encryption** via the browser's native `SubtleCrypto` API — no external crypto library needed
+- **Zero dependencies** — ships only what it needs
+- **TypeScript-first** — full generic type inference including deep nested path types
+- **Key rotation** — pass multiple keys; old cookies are transparently re-encrypted on read
+- **All four change events** — `set`, `update`, `delete`, `clear` fire with old and new values
+- **Deep path API** — get, set, update, delete nested values with dot-notation (`user.address.city`)
+- **SSR safe** — falls back to in-memory storage when `document.cookie` is unavailable (Next.js, Nuxt, Remix)
+- **Cookie size warnings** — warns automatically when payload approaches the 4KB browser limit
+- **Regex-injection safe** — cookie names are escaped before use in `RegExp`
+- **URL-encoded storage** — names and values are `encodeURIComponent`-encoded on write
+
+---
+
+## Algorithms
+
+| Algorithm | API | Security | Use case |
+|-----------|-----|----------|----------|
+| `aes-gcm` | `*Async` methods | **Production** — authenticated encryption, tamper-proof | All new projects |
+| `rc4` | sync methods | Legacy — weak, logs a warning | Migrating old data only |
+| `xor` | sync methods | Legacy — very weak, logs a warning | Backward compat only |
+
+> **Always use `aes-gcm` for new projects.** RC4 and XOR are retained only for migrating cookies set by older versions of this library.
 
 ```typescript
-const secureStore = new JsCookieEncrypt({
-  storageKey: 'secureSession',
-  cryptoConfig: {
-    privateKey: 'my-super-secret-key',
-    algorithm: 'aes-gcm',
-  }
+// Production — AES-GCM via SubtleCrypto
+const store = new JsCookieEncrypt({
+  storageKey: 'app',
+  cryptoConfig: { privateKey: 'secret', algorithm: 'aes-gcm' }
 });
-
-// Set
-await secureStore.setAsync({ token: 'jwt-token-xyz' });
-
-// Get
-const session = await secureStore.getAsync();
-console.log(session?.token);
-
-// Get single field
-const token = await secureStore.getAsync('token');
-
-// Path operations
-const value = await secureStore.getByPathAsync('token');
-await secureStore.setByPathAsync('token', 'new-jwt');
+await store.setAsync({ token: 'abc' });
+const data = await store.getAsync();
 ```
 
 ---
 
-### 2. Key Rotation
+## Key Rotation
 
-Pass an array in `privateKey`. Index `0` is the active encryption key; all others are legacy decryption fallbacks. When a cookie is successfully decrypted with a fallback key it is automatically re-encrypted with the primary key.
+Rotate your encryption keys without invalidating existing user sessions. Pass an array in `privateKey` — index `0` is the active key, the rest are legacy fallbacks. When an old cookie is decrypted with a fallback key it is automatically re-encrypted with the new primary key on the next read.
 
 ```typescript
-const rotatedStore = new JsCookieEncrypt({
-  storageKey: 'userConfig',
+const store = new JsCookieEncrypt({
+  storageKey: 'session',
   cryptoConfig: {
-    privateKey: ['new-key-2026', 'old-key-2025'],
-    algorithm: 'aes-gcm',
+    privateKey: ['new-key-2026', 'old-key-2025'],  // first = current, rest = fallbacks
+    algorithm: 'aes-gcm'
   }
 });
 
-// Decrypts with 'old-key-2025' if needed, re-saves with 'new-key-2026'
-const config = await rotatedStore.getAsync();
+// Automatically re-encrypts old cookies with 'new-key-2026' on read
+const session = await store.getAsync();
 ```
 
 ---
 
-### 3. Change Subscriptions (Events)
+## Change Events
 
-All four event types now fire correctly:
-
-| Method | Event fired |
-|--------|------------|
-| `set()` / `setAsync()` | `'set'` |
-| `update()` / `updateAsync()` / `updateByPath()` | `'update'` |
-| `deleteFields()` / `deleteByPath()` | `'delete'` |
-| `clear()` / `clearAsync()` | `'clear'` |
+Subscribe to cookie changes in real-time. Each operation fires the correct event type with both old and new values.
 
 ```typescript
 const store = new JsCookieEncrypt({
@@ -167,73 +171,164 @@ const store = new JsCookieEncrypt({
 });
 
 const unsubscribe = store.subscribe((event) => {
-  console.log(event.type);     // 'set' | 'update' | 'delete' | 'clear'
-  console.log(event.oldValue);
-  console.log(event.newValue);
+  switch (event.type) {
+    case 'set':    console.log('Created:', event.newValue); break;
+    case 'update': console.log('Updated:', event.oldValue, '→', event.newValue); break;
+    case 'delete': console.log('Deleted fields, was:', event.oldValue); break;
+    case 'clear':  console.log('Cleared, was:', event.oldValue); break;
+  }
 });
 
-await store.setAsync({ items: [10, 20] });   // fires 'set'
-await store.updateAsync({ items: [10] });    // fires 'update'
-await store.clearAsync();                    // fires 'clear'
+await store.setAsync({ items: [] });          // fires 'set'
+await store.updateAsync({ items: [1, 2] });   // fires 'update'
+await store.deleteFieldsAsync(['items']);      // fires 'delete'
+await store.clearAsync();                     // fires 'clear'
 
-unsubscribe();
+unsubscribe(); // stop listening
 ```
 
 ---
 
-### 4. Deep Path Operations
+## Deep Path Operations
 
-TypeScript infers exact types for dot-notation path strings:
+Work with nested data structures using dot-notation paths. TypeScript infers the exact type at each path.
 
 ```typescript
-interface AppData {
+interface AppState {
   user: {
     name: string;
-    address: { city: string };
+    address: { city: string; country: string };
+    preferences: { theme: 'dark' | 'light'; notifications: boolean };
   };
 }
 
-const store = new JsCookieEncrypt<AppData>({
-  storageKey: 'appData',
+const store = new JsCookieEncrypt<AppState>({
+  storageKey: 'app',
   cryptoConfig: { privateKey: 'secret', algorithm: 'aes-gcm' }
 });
 
-await store.setAsync({ user: { name: 'Alice', address: { city: 'Los Angeles' } } });
+await store.setAsync({
+  user: {
+    name: 'Alice',
+    address: { city: 'London', country: 'UK' },
+    preferences: { theme: 'dark', notifications: true }
+  }
+});
 
-// Get nested value — typed as string
-const city = await store.getByPathAsync('user.address.city');
+// Get — typed as string
+const city = await store.getByPathAsync('user.address.city'); // 'London'
 
-// Set nested value
-await store.setByPathAsync('user.address.city', 'San Francisco');
+// Set
+await store.setByPathAsync('user.address.city', 'Paris');
 
-// Deep merge nested object
-await store.updateByPathAsync('user.address', { city: 'NYC' });
+// Deep merge
+await store.updateByPathAsync('user.preferences', { theme: 'light' });
 
 // Check existence
 const exists = await store.hasAsync('user.address.city'); // true
 
-// Delete nested field
-await store.deleteByPathAsync('user.address.city');
+// Delete one field
+await store.deleteByPathAsync('user.address.country');
 ```
 
 ---
 
-### 5. SSR & In-Memory Fallback
+## SSR & Next.js
 
-When `document.cookie` is unavailable (SSR, incognito blocks), the library transparently falls back to an in-memory Map. No crashes, no code changes needed.
+Safe to instantiate at module level. When `document.cookie` is unavailable the library falls back to an in-memory Map automatically — no crashes, no code changes.
 
 ```typescript
-// Safe to instantiate at module level in Next.js / Nuxt
+// pages/_app.tsx or app/layout.tsx — safe at module level
+import JsCookieEncrypt from 'js-cookie-encrypt';
+
+export const sessionStore = new JsCookieEncrypt({
+  storageKey: 'session',
+  cryptoConfig: { privateKey: process.env.COOKIE_SECRET!, algorithm: 'aes-gcm' }
+});
+
+// In a component or server action:
+if (JsCookieEncrypt.isSupported()) {
+  await sessionStore.setAsync({ userId: 1 });
+}
+```
+
+---
+
+## Framework Examples
+
+### React
+
+```typescript
+import { useEffect, useState } from 'react';
+import JsCookieEncrypt from 'js-cookie-encrypt';
+
 const store = new JsCookieEncrypt({
-  storageKey: 'ssr-safe',
+  storageKey: 'prefs',
   cryptoConfig: { privateKey: 'secret', algorithm: 'aes-gcm' }
 });
 
-if (JsCookieEncrypt.isSupported()) {
-  console.log('Browser cookies available');
-} else {
-  console.log('Using in-memory fallback (SSR or cookies blocked)');
+function usePreferences() {
+  const [prefs, setPrefs] = useState<{ theme: string } | null>(null);
+
+  useEffect(() => {
+    store.getAsync().then(setPrefs);
+    return store.subscribe(e => {
+      if (e.type === 'set' || e.type === 'update') setPrefs(e.newValue ?? null);
+      if (e.type === 'clear') setPrefs(null);
+    });
+  }, []);
+
+  const save = (updates: Partial<{ theme: string }>) => store.updateAsync(updates);
+
+  return { prefs, save };
 }
+```
+
+### Vue 3
+
+```typescript
+import { ref, onMounted, onUnmounted } from 'vue';
+import JsCookieEncrypt from 'js-cookie-encrypt';
+
+const store = new JsCookieEncrypt({
+  storageKey: 'user',
+  cryptoConfig: { privateKey: 'secret', algorithm: 'aes-gcm' }
+});
+
+export function useUser() {
+  const user = ref<{ name: string } | null>(null);
+  let unsubscribe: () => void;
+
+  onMounted(async () => {
+    user.value = await store.getAsync() as any;
+    unsubscribe = store.subscribe(e => { user.value = e.newValue ?? null; });
+  });
+  onUnmounted(() => unsubscribe?.());
+
+  return { user };
+}
+```
+
+### Next.js (App Router)
+
+```typescript
+// lib/session.ts
+import JsCookieEncrypt from 'js-cookie-encrypt';
+
+interface Session { userId: number; role: string }
+
+export const session = new JsCookieEncrypt<Session>({
+  storageKey: 'session',
+  cryptoConfig: {
+    privateKey: process.env.NEXT_PUBLIC_COOKIE_KEY!,
+    algorithm: 'aes-gcm',
+  },
+  defaultOptions: {
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'lax',
+    path: '/',
+  }
+});
 ```
 
 ---
@@ -243,19 +338,19 @@ if (JsCookieEncrypt.isSupported()) {
 ### Constructor
 
 ```typescript
-new JsCookieEncrypt(config: StorageConfig)
+new JsCookieEncrypt<T>(config: StorageConfig)
 ```
 
 Throws if `storageKey` is empty or any `privateKey` value is an empty string.
 
 ```typescript
 interface StorageConfig {
-  storageKey: string;           // must be non-empty
+  storageKey: string;              // cookie name — must be non-empty
   cryptoConfig: {
-    privateKey: string | string[]; // must be non-empty; array = key rotation
+    privateKey: string | string[]; // encryption key(s) — must be non-empty
+    algorithm?: 'aes-gcm' | 'rc4' | 'xor'; // default: 'rc4' (use 'aes-gcm')
     saltLength?: number;           // default: 16
     encryptByDefault?: boolean;    // default: true
-    algorithm?: 'aes-gcm' | 'rc4' | 'xor'; // default: 'rc4' (legacy)
   };
   defaultOptions?: CookieOptions;
 }
@@ -275,40 +370,19 @@ interface CookieOptions {
 ### Static Methods
 
 ```typescript
-// Check if document.cookie is writable
+// Returns true if document.cookie is writable in the current environment
 JsCookieEncrypt.isSupported(): boolean
 
-// Return all cookies as name→value map (decoded)
+// Returns all cookies as a decoded name→value map
 JsCookieEncrypt.getAllCookies(): Record<string, string>
 
-// Delete all cookies for path/domain
+// Deletes all cookies for the given path/domain
 JsCookieEncrypt.clearAll(domain?: string, path?: string, clearSubDomain?: boolean): void
 ```
 
 ---
 
-### Instance Methods — Synchronous
-
-> RC4 and XOR only. Use `*Async` methods with `algorithm: 'aes-gcm'` in production.
-
-```typescript
-set(value: T, options?: CookieOptions, helpers?: { encrypt?: boolean; merge?: boolean }): void
-get(field?: keyof T): T | T[keyof T] | null
-getByPath(path: string): PathValue | null
-setByPath(path: string, value: any, options?: CookieOptions): void
-updateByPath(path: string, value: any, options?: CookieOptions): void
-deleteByPath(path: string): void
-update(updates: Partial<T>, options?: CookieOptions): void
-deleteFields(fields: Array<keyof T>): void
-extend(durationSecs: number, options?: CookieOptions): void  // duration in seconds
-clear(options?: CookieOptions): void
-has(pathOrField?: string): boolean
-subscribe(listener: CookieListener<T>): () => void           // returns unsubscribe fn
-```
-
----
-
-### Instance Methods — Asynchronous (AES-GCM)
+### Async Methods (AES-GCM — recommended)
 
 ```typescript
 setAsync(value: T, options?: CookieOptions, helpers?: { encrypt?: boolean; merge?: boolean }): Promise<void>
@@ -319,52 +393,81 @@ updateByPathAsync(path: string, value: any, options?: CookieOptions): Promise<vo
 deleteByPathAsync(path: string): Promise<void>
 updateAsync(updates: Partial<T>, options?: CookieOptions): Promise<void>
 deleteFieldsAsync(fields: Array<keyof T>): Promise<void>
-extendAsync(durationSecs: number, options?: CookieOptions): Promise<void>  // duration in seconds
+extendAsync(durationSecs: number, options?: CookieOptions): Promise<void>
 clearAsync(options?: CookieOptions): Promise<void>
 hasAsync(pathOrField?: string): Promise<boolean>
+subscribe(listener: (event: CookieEvent<T>) => void): () => void
+```
+
+---
+
+### Sync Methods (RC4/XOR legacy)
+
+```typescript
+set(value: T, options?: CookieOptions, helpers?: { encrypt?: boolean; merge?: boolean }): void
+get(field?: keyof T): T | T[keyof T] | null
+getByPath(path: string): PathValue | null
+setByPath(path: string, value: any, options?: CookieOptions): void
+updateByPath(path: string, value: any, options?: CookieOptions): void
+deleteByPath(path: string): void
+update(updates: Partial<T>, options?: CookieOptions): void
+deleteFields(fields: Array<keyof T>): void
+extend(durationSecs: number, options?: CookieOptions): void
+clear(options?: CookieOptions): void
+has(pathOrField?: string): boolean
 ```
 
 ---
 
 ## Security Considerations
 
-1. **Use AES-GCM in production.** RC4 and XOR are legacy ciphers with known weaknesses (RC4 is banned by RFC 7465). They are kept only for backward compatibility. Set `algorithm: 'aes-gcm'` and use the `*Async` methods for any security-sensitive data.
+### 1. Use AES-GCM — it's the only strong option here
 
-2. **Never hard-code private keys in client bundles.** All encryption happens client-side, so the private key is accessible to JavaScript on the page. Treat it as a per-session secret, not a server secret. Load it from your SSR layer or derive it server-side.
+RC4 is banned by [RFC 7465](https://datatracker.ietf.org/doc/html/rfc7465). XOR is trivially broken. Both are retained only for migrating legacy cookies. Set `algorithm: 'aes-gcm'` and use `*Async` methods for all new work.
 
-3. **Always use `secure: true` in production.** Combine with `sameSite: 'lax'` or `'strict'` to guard against CSRF and network interception.
+### 2. Client-side keys are not secrets
 
-4. **`httpOnly` cannot be set via JavaScript.** The `httpOnly` field in `CookieOptions` is silently ignored by browsers when set via `document.cookie`. It can only be applied server-side via the `Set-Cookie` response header. Using it here has no effect and the library will warn you.
+This library encrypts cookies against **casual inspection** — someone looking at DevTools, logs, or intercepted network traffic won't see plaintext values. It does **not** protect against an attacker who has JavaScript execution on the page, because the key is accessible to JS. Do not store server-side secrets or session tokens that bypass server auth in cookies.
 
-5. **Cookies are not a secret store.** Even encrypted, cookies are stored on the user's machine and transmitted with every request. Do not store server-side secrets, raw credentials, or PII beyond what is necessary.
+### 3. Always set `secure` and `sameSite` in production
 
-6. **Cookie size limit is 4KB.** The library warns when this is exceeded. Encrypted and base64-encoded values are larger than the original — keep stored objects small.
+```typescript
+defaultOptions: {
+  secure: true,          // HTTPS only
+  sameSite: 'lax',       // CSRF protection
+  path: '/',
+}
+```
+
+### 4. `httpOnly` cannot be set via JavaScript
+
+The `httpOnly` field in `CookieOptions` is a no-op — browsers silently ignore it when set via `document.cookie`. Set it server-side via the `Set-Cookie` response header. The library logs a warning if you include it.
+
+### 5. 4KB cookie limit
+
+Browsers enforce a ~4KB limit per cookie. Encrypted + base64-encoded payloads are larger than raw data. The library warns you when this is exceeded. Keep stored objects small — reference IDs, not full datasets.
 
 ---
 
-## Migration Notes
+## Migration from 1.0.x
 
-### v1.0.x → v1.1.0
+**Breaking changes in v1.1.0:**
 
-**Breaking changes:**
+- `getAllCookies(domain?)` — `domain` parameter removed. It was silently non-functional (browsers don't expose cookie attributes via `document.cookie`). Call `getAllCookies()` with no arguments.
+- Empty `storageKey` or `privateKey` now **throws at construction time** instead of silently failing.
+- `Math.random()` fallback for salt generation removed — throws if `crypto.getRandomValues` is unavailable.
 
-- `getAllCookies(domain?)` — the `domain` parameter has been removed. `document.cookie` does not expose cookie attributes, so domain filtering was silently broken and always returned all cookies regardless. Call `getAllCookies()` with no arguments.
+**Behavioral fixes (observable but non-breaking):**
 
-- **Empty `storageKey` or `privateKey` now throws** at construction time instead of silently failing.
-
-- **`Math.random()` salt fallback removed.** If `crypto.getRandomValues` is not available, the library now throws instead of using an insecure fallback. This only affects extremely old or non-standard environments.
-
-**Behavioral fixes (non-breaking but observable):**
-
-- `update()` / `updateByPath()` now fire `'update'` events instead of `'set'`.
-- `deleteFields()` / `deleteByPath()` now fire `'delete'` events instead of `'set'`.
-- A corrupt cookie now only removes the single affected cookie. Previously it called `clearAll()` which deleted every cookie on the domain.
-- `expires` as a number in `CookieOptions` is consistently treated as **milliseconds** everywhere (`set`, `setAsync`, `clear`, `clearAsync`). Previously `clear()` incorrectly treated it as seconds.
-- Cookie names and values are now `encodeURIComponent`-encoded on write and decoded on read.
-- `SameSite` attribute casing fixed to `SameSite` (was lowercase `samesite`).
+- `update()` fires `'update'` events (was `'set'`)
+- `deleteFields()` / `deleteByPath()` fire `'delete'` events (was `'set'`)
+- A corrupt/unreadable cookie now removes **only that cookie**. Previously it called `clearAll()` and wiped every cookie on the domain.
+- `expires` as a number in `CookieOptions` is now consistently **milliseconds** in all methods. Previously `clear()` incorrectly treated it as seconds.
+- Cookie names and values are `encodeURIComponent`-encoded — cookies set by v1.0.x will be re-set on first write.
+- `SameSite` attribute casing corrected to `SameSite` (was `samesite`).
 
 ---
 
 ## License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+MIT © [Abdullah Al Fahim](https://github.com/abfahimb)
